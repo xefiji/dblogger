@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"runtime/debug"
+	"syscall"
 
 	"github.com/iancoleman/strcase"
 	"github.com/joho/godotenv"
@@ -24,25 +26,25 @@ type binlogHandler struct {
 	messenger *Rmq
 }
 
-type event struct {
+type Event struct {
 	Readable string
 	Action   string
 	Schema   string
 	Table    string
 	Payload  map[string]interface{}
 	Origin   map[string]interface{}
-	Header   eventHeader
+	Header   EventHeader
 }
 
-type eventHeader struct {
+type EventHeader struct {
 	Timestamp uint32
 	EventType string
 	ServerID  uint32
 	EventSize uint32
 }
 
-//update User set name = concat("John", char(round(rand()*25)+97)) where id = 3;
-//insert into User(name, status) values(concat("FX", char(round(rand()*25)+97)), "active");
+//update user set name = concat("John", char(round(rand()*25)+97)) where id = 3;
+//insert into user(name, status) values(concat("FX", char(round(rand()*25)+97)), "active");
 
 //run runs the binlog listener app
 func run(exchange string) {
@@ -76,19 +78,19 @@ func (h *binlogHandler) OnRow(e *canal.RowsEvent) error {
 
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Print(r, " ", string(debug.Stack()))
+			log.Print(r, " ", string(debug.Stack()))
 		}
 	}()
 
 	//hydrate events struct
-	dbEvent := event{
+	dbEvent := Event{
 		getReadable(e),
 		e.Action,
 		e.Table.Schema,
 		e.Table.Name,
 		getPayload(e),
 		getOrigin(e),
-		eventHeader{
+		EventHeader{
 			e.Header.Timestamp,
 			e.Header.EventType.String(),
 			e.Header.ServerID,
@@ -171,5 +173,18 @@ func getOrigin(e *canal.RowsEvent) map[string]interface{} {
 //pretty marshalls sruct and prints prettyfied version for debug purpose
 func pretty(element interface{}) {
 	json, _ := json.MarshalIndent(element, "", "  ")
-	fmt.Printf("\n\n%+v\n\n", string(json))
+	log.Printf("\n\n%+v\n\n", string(json))
+}
+
+//produce
+func produce(exchange string) {
+
+	go run(exchange)
+
+	quit := make(chan os.Signal)
+
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("✅ Producer shut down gracefully")
 }
