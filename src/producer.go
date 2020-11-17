@@ -26,23 +26,6 @@ type binlogHandler struct {
 	messenger *Rmq
 }
 
-type Event struct {
-	Readable string
-	Action   string
-	Schema   string
-	Table    string
-	Payload  map[string]interface{}
-	Origin   map[string]interface{}
-	Header   EventHeader
-}
-
-type EventHeader struct {
-	Timestamp uint32
-	EventType string
-	ServerID  uint32
-	EventSize uint32
-}
-
 //update user set name = concat("John", char(round(rand()*25)+97)) where id = 3;
 //insert into user(name, status) values(concat("FX", char(round(rand()*25)+97)), "active");
 

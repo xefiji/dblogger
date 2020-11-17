@@ -3,7 +3,10 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"os"
+	"os/signal"
 	"regexp"
+	"syscall"
 
 	"github.com/joho/godotenv"
 	"github.com/streadway/amqp"
@@ -24,18 +27,19 @@ func consume(exchange string) {
 	client.Connect(exchange)
 
 	msgs := client.Receive(exchange)
-	forever := make(chan bool)
+	quit := make(chan os.Signal)
 
 	if exchangeIsInternal(exchange) {
-		consumeForElastic(msgs)
+		go consumeForElastic(msgs)
 	}
 
 	if exchangeIsPublic(exchange) {
-		consumeStream(msgs)
+		go consumeStream(msgs)
 	}
 
 	log.Printf(" [*] Waiting for logs. To exit press CTRL+C")
-	<-forever
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
 
 	log.Println("✅ Consumer shut down gracefully")
 }
