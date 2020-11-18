@@ -31,19 +31,19 @@ func (r *Rmq) Connect(exchange string) {
 
 	r.cnx = conn
 	r.exchange = exchange
-	log.Println("✅ Successfully connected to rabbitmq")
+	log.Println("[rabbitmq] successfully connected ✅")
 }
 
 //Disconnect
 func (r *Rmq) Disconnect() {
 	r.cnx.Close()
-	log.Println("✅ Successfully DISconnected from rabbitmq")
+	log.Println("[rabbitmq] successfully DISconnected ✅")
 }
 
 //failOnError
 func (r *Rmq) failOnError(err error, msg string) {
 	if err != nil {
-		log.Fatalf("❌ %s: %s", msg, err)
+		log.Fatalf("[rabbitmq] ❌ %s: %s", msg, err)
 	}
 }
 

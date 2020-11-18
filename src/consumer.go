@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"strings"
 	"syscall"
 
 	"github.com/joho/godotenv"
@@ -19,7 +20,7 @@ func consume(exchange string) {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("[consumer] Error loading .env file ❌")
 	}
 
 	//connect to broker
@@ -30,6 +31,12 @@ func consume(exchange string) {
 	quit := make(chan os.Signal)
 
 	if exchangeIsInternal(exchange) {
+
+		es := GetESInstance()
+		if false == es.IndexExists(DEFAULT_INDEX) {
+			es.Map(DEFAULT_INDEX, "mapping.json")
+		}
+
 		go consumeForElastic(msgs)
 	}
 
@@ -41,7 +48,7 @@ func consume(exchange string) {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("✅ Consumer shut down gracefully")
+	log.Println("[consumer] shut down gracefully ✅")
 }
 
 //exchangeIsInternal
@@ -71,5 +78,13 @@ func consumeForElastic(msgs <-chan amqp.Delivery) {
 		event := Event{}
 		json.Unmarshal(d.Body, &event)
 		pretty(event)
+
+		s, err := json.Marshal(event)
+		if err != nil {
+			log.Fatalf("[consumer] could not marshal event: %s ❌", err.Error())
+			continue
+		}
+
+		GetESInstance().IndexOne(DEFAULT_INDEX, event.Id, strings.NewReader(string(s)))
 	}
 }

@@ -8,7 +8,9 @@ import (
 	"os/signal"
 	"runtime/debug"
 	"syscall"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/iancoleman/strcase"
 	"github.com/joho/godotenv"
 	"github.com/siddontang/go-mysql/canal"
@@ -67,6 +69,8 @@ func (h *binlogHandler) OnRow(e *canal.RowsEvent) error {
 
 	//hydrate events struct
 	dbEvent := Event{
+		uuid.New().String(),
+		time.Unix(int64(e.Header.Timestamp), 0).Format("2006-01-02 15:04:05"),
 		getReadable(e),
 		e.Action,
 		e.Table.Schema,
@@ -169,5 +173,5 @@ func produce(exchange string) {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("✅ Producer shut down gracefully")
+	log.Println("[producer] producer shut down gracefully ✅")
 }

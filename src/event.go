@@ -1,6 +1,8 @@
 package main
 
 type Event struct {
+	Id       string
+	Date     string
 	Readable string
 	Action   string
 	Schema   string

@@ -1,0 +1,43 @@
+{
+    "properties": {
+      "date": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss"
+      },
+      "readable": {
+        "type": "keyword"
+      },
+      "action": {
+        "type": "keyword"
+      },
+      "schema": {
+        "type": "keyword"
+      },
+      "table": {
+        "type": "keyword"
+      },
+      "payload": {
+        "type": "object"
+      },
+      "origin": {
+        "type": "object"
+      },
+      "header": {
+        "type": "nested",
+        "properties": {
+          "timestamp": {
+            "type": "date"
+          },
+          "event_type": {
+            "type": "keyword"
+          },
+          "server_id": {
+            "type": "keyword"
+          },
+          "event_size": {
+            "type": "short"
+          }        
+        }
+      }
+    }
+  }
