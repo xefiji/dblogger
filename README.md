@@ -46,3 +46,9 @@ make ps_all # all container's status
 
 make stop_all # stop playing
 ```
+
+# Todo
+
+- [ ] todo internal exchange should be a different user
+- [ ] todo two steps build dockerfile
+- [ ] todo observer pattern on consumer

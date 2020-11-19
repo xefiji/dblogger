@@ -10,8 +10,6 @@ const (
 	MODE_CONSUME = "consume"
 )
 
-//todo internal exchange should be a different user
-//todo observer pattern on consumer ?
 func main() {
 
 	mode := flag.String("mode", "produce", "Produce will run binlogger and dispatchs events; consume will run consumer")
