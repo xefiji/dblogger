@@ -1,6 +1,37 @@
 version: '3.3'
 services:
 
+  producer:
+    build: .
+    image: xefiji/dblogger    
+    depends_on:       
+      - rabbitmq
+    networks:
+      - db
+      - rabbitmq
+    ports:
+      - ${PRODUCER_PORT}:${PRODUCER_PORT}
+    environment: 
+      WAIT_HOSTS: rabbitmq:${RABBITMQ_PORT}
+      WAIT_BEFORE_HOSTS: 10
+
+  consumer:    
+    image: xefiji/dblogger
+    command: sh -c "/wait && ./binlog --mode=consume --exchange=binlog_internal"
+    depends_on: 
+      - producer
+      - rabbitmq      
+      - es01
+      - es02
+    networks: 
+      - rabbitmq
+      - elastic
+    ports:
+      - ${CONSUMER_PORT}:${CONSUMER_PORT}
+    environment: 
+      WAIT_HOSTS: rabbitmq:${RABBITMQ_PORT}, es01:9200
+      WAIT_BEFORE_HOSTS: 30
+
   rabbitmq:
     image: rabbitmq:3-management-alpine  
     environment:
@@ -12,6 +43,8 @@ services:
     ports:
       - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
       - ${RABBITMQ_MANAGEMENT_PORT}:${RABBITMQ_MANAGEMENT_PORT}
+    networks:      
+      - rabbitmq
 
 
   es01:
@@ -62,8 +95,8 @@ services:
     ports:
       - 5601:5601
     environment:
-      - ELASTICSEARCH_URL=http://es01:9200
-      - ELASTICSEARCH_HOSTS=http://es01:9200
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_CONTAINER_URL}
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_CONTAINER_URL}
     networks:
       - elastic
     
@@ -73,6 +106,8 @@ volumes:
   data02:
     driver: local  
 
-networks:
+networks:  
+  db:    
+  rabbitmq:
   elastic:
     driver: bridge

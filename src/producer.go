@@ -61,6 +61,8 @@ func run(exchange string) {
 //OnRow
 func (h *binlogHandler) OnRow(e *canal.RowsEvent) error {
 
+	log.Printf("[producer] got 1 %s event on server %d and %s.%s ✅\n", e.Action, e.Header.ServerID, e.Table.Schema, e.Table.Name)
+
 	defer func() {
 		if r := recover(); r != nil {
 			log.Print(r, " ", string(debug.Stack()))

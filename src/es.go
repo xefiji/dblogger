@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 	"sync"
 
@@ -38,7 +39,12 @@ type es struct {
 //or returns the already instantiated singleton
 func GetESInstance() *es {
 	once.Do(func() {
-		client, err := elasticsearch.NewDefaultClient()
+
+		cfg := elasticsearch.Config{
+			Addresses: []string{os.Getenv("ELASTICSEARCH_CONTAINER_URL")},
+		}
+
+		client, err := elasticsearch.NewClient(cfg)
 		if err != nil {
 			log.Panicf("❌ [elastic] Error creating the client: %s", err)
 		}
