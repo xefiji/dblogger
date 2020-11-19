@@ -18,6 +18,8 @@ var client Rmq
 //consume
 func consume(exchange string) {
 
+	log.Printf("[consumer] consumer started from exchange %s ✅\n", exchange)
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("[consumer] Error loading .env file ❌")

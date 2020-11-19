@@ -38,6 +38,8 @@ func run(exchange string) {
 		log.Fatal("Error loading .env file")
 	}
 
+	log.Println("[producer] .env file loaded ✅")
+
 	//connect to db
 	c, err := getDefaultCanal()
 	if err == nil {
@@ -45,6 +47,7 @@ func run(exchange string) {
 		if err == nil {
 
 			//connect to broker
+			log.Println("[producer] connecting to RabbitMQ")
 			client := Rmq{}
 			client.Connect(exchange)
 
@@ -54,7 +57,11 @@ func run(exchange string) {
 
 			c.SetEventHandler(b)
 			c.RunFrom(coords)
+		} else {
+			log.Printf("[producer] error getting master pos: %s ❌", err.Error())
 		}
+	} else {
+		log.Printf("[producer] error getting default canal: %s ❌", err.Error())
 	}
 }
 
@@ -167,6 +174,7 @@ func pretty(element interface{}) {
 
 //produce
 func produce(exchange string) {
+	log.Printf("[producer] producer started to exchange %s ✅\n", exchange)
 
 	go run(exchange)
 
