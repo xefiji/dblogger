@@ -40,8 +40,22 @@ type es struct {
 func GetESInstance() *es {
 	once.Do(func() {
 
-		cfg := elasticsearch.Config{
-			Addresses: []string{os.Getenv("ELASTICSEARCH_CONTAINER_URL")},
+		var cfg elasticsearch.Config
+
+		cloudId := os.Getenv("ELASTICSEARCH_CLOUD_ID")
+		username := os.Getenv("ELASTICSEARCH_USER")
+		password := os.Getenv("ELASTICSEARCH_PASSWORD")
+
+		if cloudId != "" && username != "" && password != "" {
+			cfg = elasticsearch.Config{
+				CloudID:  cloudId,
+				Username: username,
+				Password: password,
+			}
+		} else {
+			cfg = elasticsearch.Config{
+				Addresses: []string{os.Getenv("ELASTICSEARCH_CONTAINER_URL")},
+			}
 		}
 
 		client, err := elasticsearch.NewClient(cfg)
@@ -58,6 +72,7 @@ func GetESInstance() *es {
 			log.Panicf("❌ [elastic] Status code not satisfying: %d", res.StatusCode)
 		}
 
+		log.Println(client.Info())
 		log.Printf("[elastic] %s ✅", res.Status())
 
 		instance = &es{

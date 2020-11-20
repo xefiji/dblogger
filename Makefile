@@ -7,4 +7,4 @@ run_all:
 ps_all:
 	docker-compose -f docker-compose.yml -f examples/docker-compose.yml ps
 build:
-	docker-compose --build producer
+	docker-compose build producer
